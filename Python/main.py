@@ -2,12 +2,27 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 from conexion import Conexion
+from cryptography.fernet import Fernet
 
 # Variable para almacenar el nombre de usuario
 username = None
 
 # Crear una instancia de la clase Conexion
 conexion = Conexion()
+
+# Generar una clave de encriptación (esto debe hacerse una vez y almacenarse de manera segura)
+key = Fernet.generate_key()
+cipher_suite = Fernet(key)
+
+# Función para encriptar el mensaje
+def encrypt_message(message):
+    encrypted_message = cipher_suite.encrypt(message.encode())
+    return encrypted_message
+
+# Función para desencriptar el mensaje
+def decrypt_message(encrypted_message):
+    decrypted_message = cipher_suite.decrypt(encrypted_message).decode()
+    return decrypted_message
 
 # Función para enviar el mensaje
 def send_message(event=None):
@@ -23,7 +38,8 @@ def send_message(event=None):
     else:
         if message:
             full_message = f"{username}: {message}"
-            conexion.enviar_mensaje(full_message)
+            encrypted_message = encrypt_message(full_message)
+            conexion.enviar_mensaje(encrypted_message)
             add_message(full_message)
             entry.delete(0, tk.END)
 
