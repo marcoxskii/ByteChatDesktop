@@ -31,7 +31,7 @@ ByteChatDesktop es una aplicación de chat de escritorio basada en una arquitect
     ```
 
 3. Instala Node.js si no lo tienes instalado:
-    # En macOS
+En macOS
     ```sh
     # En macOS
     brew install node
@@ -39,7 +39,7 @@ ByteChatDesktop es una aplicación de chat de escritorio basada en una arquitect
 
 ## Uso
 
-#Servidor
+Servidor
 
 1. Navega al directorio del servidor:
     ```sh
@@ -51,7 +51,7 @@ ByteChatDesktop es una aplicación de chat de escritorio basada en una arquitect
     node app.js
     ```
 
-#Cliente
+Cliente
 
 1. Navega al directorio del cliente:
     ```sh
@@ -64,12 +64,3 @@ ByteChatDesktop es una aplicación de chat de escritorio basada en una arquitect
     ```
 
 
-La estructura debería verse tal que asi:
-
-ByteChatDesktop/
-├── DesktopSocket/
-│   └── app.js          # Código del servidor
-├── Python/
-│   ├── [main.py](http://_vscodecontentref_/1)         # Código del cliente
-│   └── conexion.py     # Manejo de la conexión del cliente
-└── [README.md](http://_vscodecontentref_/2)           
