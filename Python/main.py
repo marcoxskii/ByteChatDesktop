@@ -2,26 +2,43 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 from conexion import Conexion
-from cryptography.fernet import Fernet
+from Crypto.Cipher import AES
+import base64
+import hashlib
+import threading
 
 # Variable para almacenar el nombre de usuario
 username = None
 
 # Crear una instancia de la clase Conexion
-conexion = Conexion()
+class ConexionConMensajes(Conexion):
+    def on_message_received(self, mensaje):
+        add_message(mensaje)
 
-# Generar una clave de encriptación (esto debe hacerse una vez y almacenarse de manera segura)
-key = Fernet.generate_key()
-cipher_suite = Fernet(key)
+conexion = ConexionConMensajes()
+
+# Clave de encriptación (debe ser la misma que la utilizada en el servidor)
+key = 'yLJHJo5hOzKMYROOTuRoQwLJfZx4W3hBRUYg4opoJZM='  # Reemplaza esto con la clave generada
+key = hashlib.sha256(key.encode()).digest()
 
 # Función para encriptar el mensaje
 def encrypt_message(message):
-    encrypted_message = cipher_suite.encrypt(message.encode())
+    print(f"Mensaje antes de encriptar: {message}")
+    cipher = AES.new(key, AES.MODE_GCM)
+    nonce = cipher.nonce
+    ciphertext, tag = cipher.encrypt_and_digest(message.encode())
+    encrypted_message = base64.b64encode(nonce + tag + ciphertext).decode('utf-8')
+    print(f"Mensaje encriptado: {encrypted_message}")
     return encrypted_message
 
 # Función para desencriptar el mensaje
 def decrypt_message(encrypted_message):
-    decrypted_message = cipher_suite.decrypt(encrypted_message).decode()
+    encrypted_message = base64.b64decode(encrypted_message)
+    nonce = encrypted_message[:16]
+    tag = encrypted_message[16:32]
+    ciphertext = encrypted_message[32:]
+    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    decrypted_message = cipher.decrypt_and_verify(ciphertext, tag).decode('utf-8')
     return decrypted_message
 
 # Función para enviar el mensaje
@@ -39,7 +56,7 @@ def send_message(event=None):
         if message:
             full_message = f"{username}: {message}"
             encrypted_message = encrypt_message(full_message)
-            conexion.enviar_mensaje(encrypted_message)
+            conexion.enviar_mensaje(encrypted_message.encode('utf-8'))
             add_message(full_message)
             entry.delete(0, tk.END)
 
@@ -135,6 +152,9 @@ entry.pack(side="left", fill="x", expand=True)
 # Crear un botón con el texto "Enviar" en la parte inferior de la ventana
 button = tk.Button(frame, text="Send", fg="black", bg="orange", font=("Courier", 12), command=send_message)
 button.pack(side="right")
+
+# Iniciar un hilo para recibir mensajes
+threading.Thread(target=conexion.recibir_mensaje, daemon=True).start()
 
 # Ejecutar el bucle principal de la aplicación
 root.mainloop()
